@@ -1,0 +1,187 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Brand {
+  id        String    @id @default(cuid())
+  name      String
+  slug      String    @unique
+  logoUrl   String?
+  createdAt DateTime  @default(now())
+  products  Product[]
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  description String
+  sortOrder   Int       @default(0)
+  createdAt   DateTime  @default(now())
+  products    Product[]
+}
+
+model Product {
+  id                 String                @id @default(cuid())
+  name               String
+  slug               String                @unique
+  sku                String                @unique
+  ean                String?
+  brandId            String
+  brand              Brand                 @relation(fields: [brandId], references: [id])
+  categoryId         String
+  category           Category              @relation(fields: [categoryId], references: [id])
+  summary            String
+  description        String
+  priceCents         Int
+  promoPriceCents    Int?
+  pixDiscountPercent Int                   @default(5)
+  warrantyMonths     Int
+  rating             Float
+  reviewCount        Int
+  featured           Boolean               @default(false)
+  isLaunch           Boolean               @default(false)
+  isDeal             Boolean               @default(false)
+  active             Boolean               @default(true)
+  purpose            String
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+  images             ProductImage[]
+  spec               ProductSpecification?
+  inventory          Inventory?
+  orderItems         OrderItem[]
+
+  @@index([brandId])
+  @@index([categoryId])
+  @@index([active, featured])
+  @@index([active, isDeal])
+  @@index([active, isLaunch])
+}
+
+model ProductImage {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String
+  alt       String
+  sortOrder Int     @default(0)
+
+  @@index([productId])
+}
+
+model ProductSpecification {
+  id              String  @id @default(cuid())
+  productId       String  @unique
+  product         Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  screenInches    Float
+  resolution      String
+  refreshRate     Int
+  panel           String
+  processor       String
+  processorFamily String
+  generation      String
+  cores           Int
+  threads         Int
+  ramGb           Int
+  ramType         String
+  ramMaxGb        Int
+  ssdGb           Int
+  gpu             String
+  gpuType         String
+  os              String
+  wifi            String
+  bluetooth       String
+  hdmi            Boolean
+  usb             String
+  usbC            String
+  ethernet        Boolean
+  battery         String
+  charger         String
+  weightKg        Float
+  widthMm         Float
+  heightMm        Float
+  depthMm         Float
+  color           String
+}
+
+model Inventory {
+  id        String  @id @default(cuid())
+  productId String  @unique
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  physical  Int
+  reserved  Int     @default(0)
+  minimum   Int     @default(2)
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  CANCELED
+  REFUNDED
+}
+
+enum BillingType {
+  PIX
+  CREDIT_CARD
+}
+
+// ponytail: dados do cliente ficam no pedido; model Customer entra com a área do cliente.
+model Order {
+  id              String         @id @default(cuid())
+  number          Int            @unique @default(autoincrement())
+  status          OrderStatus    @default(PENDING)
+  billingType     BillingType
+  totalCents      Int
+  customerName    String
+  customerEmail   String
+  customerCpfCnpj String
+  customerPhone   String
+  asaasCustomerId String?
+  asaasPaymentId  String?        @unique
+  invoiceUrl      String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  items           OrderItem[]
+  events          PaymentEvent[]
+
+  @@index([status, createdAt])
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  name      String
+  qty       Int
+  unitCents Int
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+// id = id do evento Asaas (evt_...) → garante idempotência do webhook.
+model PaymentEvent {
+  id        String   @id
+  event     String
+  paymentId String
+  orderId   String?
+  order     Order?   @relation(fields: [orderId], references: [id])
+  payload   Json
+  createdAt DateTime @default(now())
+
+  @@index([paymentId])
+}
+
+// Configurações editadas em /admin/configuracoes (chave/valor).
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}

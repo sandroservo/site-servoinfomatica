@@ -1,36 +1,59 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Servo Informática — catálogo
 
-## Getting Started
+Loja de notebooks da Servo Informática: home, categorias, marcas, ficha técnica, busca, comparação e carrinho. O estoque fica no PostgreSQL e a API expõe o mesmo catálogo.
 
-First, run the development server:
+## Subir
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run db
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Em outro terminal:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npx prisma migrate dev
+npm run db:seed
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+O Postgres local sobe em `127.0.0.1:5433` com os dados em `.data/`. Se o Docker estiver disponível, `docker compose up -d` usa o mesmo endereço.
 
-## Learn More
+## API
 
-To learn more about Next.js, take a look at the following resources:
+- `GET /api/products`
+- `GET /api/products/[slug]`
+- `GET /api/categories`
+- `GET /api/brands`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Filtros na listagem: `q`, `marca`, `categoria`, `tela`, `peso`, `processador`, `ram`, `ssd`, `gpu`, `finalidade`, `estoque`, `oferta`, `lancamento`, `min`, `max`, `ordem`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Admin
 
-## Deploy on Vercel
+Acesse `/admin`. No primeiro acesso, a tela de login cria o administrador (e-mail e senha).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Dali dá para criar e editar notebooks, marcas, categorias e estoque. Produto desativado some da loja. Duplicar cria uma cópia oculta, com estoque zerado.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Configurações
+
+O `.env` só guarda `DATABASE_URL`. Todo o resto fica em `/admin/configuracoes` (tabela `Setting`):
+
+- dados da loja: telefone, WhatsApp, e-mail, horário, endereço de retirada;
+- Asaas: ambiente (sandbox/produção), chave da API, URL e token do webhook, teste de conexão;
+- acesso: e-mail e senha do administrador (trocar a senha encerra todas as sessões).
+
+As fotos do catálogo são ilustrativas até o cadastro das imagens oficiais de cada notebook.
+
+## Produção atrás do Nginx
+
+Login, logout, bloqueio do `/admin` e a URL do webhook no painel usam o domínio que o Nginx repassa. Sem estes headers o app só enxerga `localhost:3000` e redireciona para lá:
+
+```nginx
+location / {
+    proxy_pass http://127.0.0.1:3000;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Host $host;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+}
+```

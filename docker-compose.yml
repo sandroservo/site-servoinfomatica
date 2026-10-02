@@ -1,0 +1,14 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: servo
+      POSTGRES_PASSWORD: servo
+      POSTGRES_DB: servo
+    ports:
+      - "5433:5432"
+    volumes:
+      - servo_pg:/var/lib/postgresql/data
+
+volumes:
+  servo_pg:
