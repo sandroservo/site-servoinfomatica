@@ -34,7 +34,7 @@ export default async function BrandPage({
     <CatalogView
       eyebrow="Marca"
       title={brand.name}
-      description={`Notebooks ${brand.name} disponíveis no catálogo da Servo Informática.`}
+      description={`Produtos ${brand.name} disponíveis no catálogo da Servo Informática.`}
       action={`/marca/${slug}`}
       filters={filters}
       products={products}

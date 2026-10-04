@@ -30,7 +30,7 @@ export async function generateMetadata({
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const product = await getProductBySlug((await params).slug);
-  if (!product?.spec) notFound();
+  if (!product?.active) notFound();
 
   const price = effectivePriceCents(product.priceCents, product.promoPriceCents);
   const units = availableUnits(product);
@@ -41,38 +41,46 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
     .filter((item) => item.id !== product.id)
     .slice(0, 4);
 
-  const rows = [
-    ["Tela", `${product.spec.screenInches.toLocaleString("pt-BR")}" ${product.spec.resolution}`],
-    ["Taxa", `${product.spec.refreshRate} Hz`],
-    ["Painel", product.spec.panel],
-    ["Processador", product.spec.processor],
-    ["Geração", product.spec.generation],
-    ["Núcleos / threads", `${product.spec.cores} / ${product.spec.threads}`],
-    ["Memória", `${product.spec.ramGb} GB ${product.spec.ramType}`],
-    ["Máximo de RAM", `${product.spec.ramMaxGb} GB`],
-    ["SSD", product.spec.ssdGb >= 1024 ? "1 TB" : `${product.spec.ssdGb} GB`],
-    ["GPU", product.spec.gpu],
-    ["Sistema", product.spec.os],
-    ["Wi-Fi", product.spec.wifi],
-    ["Bluetooth", product.spec.bluetooth],
-    ["HDMI", product.spec.hdmi ? "Sim" : "Não"],
-    ["USB", product.spec.usb],
-    ["USB-C", product.spec.usbC],
-    ["Ethernet", product.spec.ethernet ? "Sim" : "Não"],
-    ["Bateria", product.spec.battery],
-    ["Carregador", product.spec.charger],
-    ["Peso", `${product.spec.weightKg.toLocaleString("pt-BR")} kg`],
-    ["Dimensões", `${product.spec.widthMm} × ${product.spec.depthMm} × ${product.spec.heightMm} mm`],
-    ["Cor", product.spec.color],
-    ["Garantia", `${product.warrantyMonths} meses`],
-    ["SKU", product.sku],
+  const spec = product.spec;
+  // Ficha completa só para notebooks; demais produtos (vindos do Hiper) mostram os dados gerais.
+  const rows: [string, string][] = [
+    ...(spec
+      ? ([
+          ["Tela", `${spec.screenInches.toLocaleString("pt-BR")}" ${spec.resolution}`],
+          ["Taxa", `${spec.refreshRate} Hz`],
+          ["Painel", spec.panel],
+          ["Processador", spec.processor],
+          ["Geração", spec.generation],
+          ["Núcleos / threads", `${spec.cores} / ${spec.threads}`],
+          ["Memória", `${spec.ramGb} GB ${spec.ramType}`],
+          ["Máximo de RAM", `${spec.ramMaxGb} GB`],
+          ["SSD", spec.ssdGb >= 1024 ? "1 TB" : `${spec.ssdGb} GB`],
+          ["GPU", spec.gpu],
+          ["Sistema", spec.os],
+          ["Wi-Fi", spec.wifi],
+          ["Bluetooth", spec.bluetooth],
+          ["HDMI", spec.hdmi ? "Sim" : "Não"],
+          ["USB", spec.usb],
+          ["USB-C", spec.usbC],
+          ["Ethernet", spec.ethernet ? "Sim" : "Não"],
+          ["Bateria", spec.battery],
+          ["Carregador", spec.charger],
+          ["Peso", `${spec.weightKg.toLocaleString("pt-BR")} kg`],
+          ["Dimensões", `${spec.widthMm} × ${spec.depthMm} × ${spec.heightMm} mm`],
+          ["Cor", spec.color],
+        ] as [string, string][])
+      : []),
+    ["Marca", product.brand.name],
+    ["Categoria", product.category.name],
+    ...(product.warrantyMonths > 0 ? ([["Garantia", `${product.warrantyMonths} meses`]] as [string, string][]) : []),
+    ["Código", product.sku],
     ["EAN", product.ean ?? "—"],
   ];
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
       <p className="text-sm text-neutral-500">
-        <Link href="/notebooks" className="hover:text-black">Notebooks</Link>
+        <Link href="/notebooks" className="hover:text-black">Produtos</Link>
         {" / "}
         <Link href={`/categoria/${product.category.slug}`} className="hover:text-black">
           {product.category.name}
@@ -92,7 +100,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           <h1 className="mt-2 font-display text-4xl font-semibold tracking-tight sm:text-5xl">
             {product.name}
           </h1>
-          <p className="mt-4 text-lg font-medium">{specLine(product)}</p>
+          {spec ? <p className="mt-4 text-lg font-medium">{specLine(product)}</p> : null}
           <p className="mt-3 max-w-xl text-neutral-500">{product.summary}</p>
 
           <div className="mt-8 border-y border-black/10 py-6">
@@ -109,8 +117,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             <p className="mt-3 text-sm">
               {stockLabel(units)}
               {units > 0 ? ` · ${units} disponível${units > 1 ? "is" : ""}` : ""}
-              {" · "}
-              Garantia {product.warrantyMonths} meses
+              {product.warrantyMonths > 0 ? ` · Garantia ${product.warrantyMonths} meses` : ""}
             </p>
           </div>
 
@@ -129,12 +136,12 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             )}
             <CompareButton slug={product.slug} />
           </div>
-          <p className="mt-6 text-sm leading-6 text-neutral-600">{product.description}</p>
+          <p className="mt-6 whitespace-pre-line text-sm leading-6 text-neutral-600">{product.description}</p>
         </div>
       </div>
 
       <section className="mt-14">
-        <h2 className="font-display text-3xl font-semibold">Ficha técnica</h2>
+        <h2 className="font-display text-3xl font-semibold">{spec ? "Ficha técnica" : "Informações"}</h2>
         <dl className="mt-6 divide-y divide-black/5 rounded-3xl border border-black/5">
           {rows.map(([label, value]) => (
             <div key={label} className="grid gap-1 px-5 py-3 sm:grid-cols-[220px_1fr]">

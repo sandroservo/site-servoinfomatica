@@ -19,7 +19,7 @@ const benefits = [
 
 const infoCards = [
   { title: "Tudo sobre a Servo Informática", text: "Loja física e virtual com o mesmo estoque, preço e atendimento.", href: "/notebooks" },
-  { title: "Compare antes de comprar", text: "Coloque até 3 notebooks lado a lado e veja tela, peso, memória e preço.", href: "/comparar" },
+  { title: "Compare antes de comprar", text: "Coloque até 3 notebooks lado a lado e veja tela, peso, memória e preço antes de decidir.", href: "/comparar" },
   { title: "Garantia e retirada", text: "Equipamentos com garantia e retirada na loja depois do pagamento confirmado.", href: "/ofertas" },
 ];
 
@@ -39,13 +39,13 @@ export default async function HomePage() {
         <HeroVideos />
         <div className="mx-auto flex min-h-[26rem] max-w-7xl flex-col justify-center px-4 py-14 sm:px-6 lg:min-h-[30rem]">
           <p className="inline-flex w-fit rounded-md border border-white/30 bg-black/40 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em]">
-            Notebooks com garantia
+            Informática com garantia
           </p>
           <h1 className="mt-5 max-w-2xl font-display text-5xl font-bold uppercase leading-[0.95] tracking-tight sm:text-6xl lg:text-7xl">
             Tecnologia para o seu ritmo
           </h1>
           <p className="mt-5 max-w-lg text-lg leading-7 text-white/75">
-            Compactos para estudar, profissionais para o trabalho e modelos gamer. O mesmo estoque da loja física.
+            Notebooks, computadores, periféricos e acessórios. O mesmo estoque e preço da loja física.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button asChild size="lg" className="uppercase tracking-wider">

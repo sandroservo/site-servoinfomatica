@@ -22,6 +22,8 @@ model Category {
   slug        String    @unique
   description String
   sortOrder   Int       @default(0)
+  // Categoria de origem no ERP Hiper (categoriaDoProdutoId)
+  hiperId     String?   @unique
   createdAt   DateTime  @default(now())
   products    Product[]
 }
@@ -49,6 +51,10 @@ model Product {
   isDeal             Boolean               @default(false)
   active             Boolean               @default(true)
   purpose            String
+  // Vínculo com o ERP Hiper: id do produto (ou da variação) e código interno
+  hiperId            String?               @unique
+  hiperCode          Int?
+  hiperSyncedAt      DateTime?
   createdAt          DateTime              @default(now())
   updatedAt          DateTime              @updatedAt
   images             ProductImage[]
@@ -144,6 +150,10 @@ model Order {
   asaasCustomerId String?
   asaasPaymentId  String?        @unique
   invoiceUrl      String?
+  // Pedido de venda criado no ERP Hiper depois do pagamento confirmado
+  hiperOrderId    String?
+  hiperSentAt     DateTime?
+  hiperError      String?
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
   items           OrderItem[]

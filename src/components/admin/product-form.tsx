@@ -29,6 +29,7 @@ export type ProductFormValues = {
   isDeal: boolean;
   active: boolean;
   images: string;
+  hasSpec: boolean;
   screenInches: number;
   resolution: string;
   refreshRate: number;
@@ -178,7 +179,10 @@ export function ProductForm({
       </section>
 
       <section className="rounded-3xl bg-white p-5">
-        <h2 className="font-display text-xl">Ficha técnica</h2>
+        <h2 className="font-display text-xl">Ficha técnica de notebook</h2>
+        <div className="mt-3">
+          <Check name="hasSpec" label="Este produto é um notebook (mostrar a ficha abaixo na loja e nos filtros)" defaultChecked={product.hasSpec} />
+        </div>
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Field label='Tela (pol.)' name="screenInches" defaultValue={product.screenInches} />
           <Field label="Resolução" name="resolution" defaultValue={product.resolution} />
@@ -271,6 +275,7 @@ export const emptyProduct = {
   isDeal: false,
   active: true,
   images: "/products/laptop-02.jpg",
+  hasSpec: true,
   screenInches: 14,
   resolution: "1920x1080",
   refreshRate: 60,

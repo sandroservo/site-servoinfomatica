@@ -15,7 +15,7 @@ const columns = [
   {
     title: "Loja",
     links: [
-      ["Todos os notebooks", "/notebooks"],
+      ["Todos os produtos", "/notebooks"],
       ["Ofertas", "/ofertas"],
       ["Lançamentos", "/lancamentos"],
       ["Comparar", "/comparar"],
@@ -38,7 +38,7 @@ export function SiteFooter({ brands, store }: { brands: { name: string; slug: st
         <div>
           <p className="font-display text-2xl font-semibold">Servo Informática</p>
           <p className="mt-3 max-w-sm text-sm leading-6 text-white/65">
-            Catálogo de notebooks da loja física e da loja virtual, com o mesmo
+            Informática da loja física e da loja virtual, com o mesmo
             produto, preço e estoque.
           </p>
           <p className="mt-6 text-sm text-white/65">

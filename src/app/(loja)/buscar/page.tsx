@@ -19,7 +19,7 @@ export default async function SearchPage({
   return (
     <CatalogView
       eyebrow="Busca"
-      title={query ? `Resultados para “${query}”` : "Buscar notebooks"}
+      title={query ? `Resultados para “${query}”` : "Buscar produtos"}
       description="Pesquise por nome, marca, SKU ou processador."
       action="/buscar"
       filters={filters}

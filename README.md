@@ -57,3 +57,12 @@ location / {
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 }
 ```
+
+## ERP Hiper
+
+Integração pela API personalizada de loja virtual do Hiper Gestão ([doc](https://ajuda.hiper.com.br/ajudahiper/s/article/integracao-api-personalizada), [swagger](https://ms-ecommerce.hiper.com.br/swagger/index.html)). Configure em `/admin/configuracoes` → ERP Hiper (chave de segurança em Vendas → Loja virtual no Hiper).
+
+- Produtos, preço, estoque, situação e fotos vêm do Hiper (incremental por `pontoDeSincronizacao`, a cada N minutos, timer em `src/instrumentation.ts`). Produto com grade vira um item por variação.
+- Categoria/marca são criadas na primeira vez; depois o admin pode reclassificar sem o Hiper sobrescrever. Promoção, destaque, Pix, garantia e ficha técnica são da loja.
+- Pedido pago (webhook Asaas) vira pedido de venda no Hiper; estorno cancela. Falhas aparecem em `/admin/pedidos` com "Reenviar ao Hiper".
+- Teste sem acessar a API real: `npx tsx scripts/check-hiper.ts`.

@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { imageUnoptimized } from "@/lib/utils";
 import { useState } from "react";
 
 export function ProductGallery({
@@ -18,6 +19,7 @@ export function ProductGallery({
       <div className="overflow-hidden rounded-[2rem] bg-[#f3f3f3]">
         <Image
           src={current.url}
+          unoptimized={imageUnoptimized(current.url)}
           alt={current.alt}
           width={1200}
           height={900}
@@ -34,12 +36,15 @@ export function ProductGallery({
               onClick={() => setActive(index)}
               className={`overflow-hidden rounded-2xl border ${index === active ? "border-black" : "border-transparent"}`}
             >
-              <Image src={image.url} alt="" width={160} height={120} className="h-20 w-28 object-cover" />
+              <Image src={image.url} unoptimized={imageUnoptimized(image.url)} alt="" width={160} height={120} className="h-20 w-28 object-cover" />
             </button>
           ))}
         </div>
       ) : null}
-      <p className="mt-3 text-xs text-neutral-400">Foto ilustrativa até o cadastro das fotos oficiais do produto.</p>
+      {/* fotos de demonstração ficam em /products/; as do Hiper são reais */}
+      {current?.url.startsWith("/products/") ? (
+        <p className="mt-3 text-xs text-neutral-500">Foto ilustrativa até o cadastro das fotos oficiais do produto.</p>
+      ) : null}
     </div>
   );
 }

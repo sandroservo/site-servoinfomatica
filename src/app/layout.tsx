@@ -15,11 +15,11 @@ const sora = Sora({
 
 export const metadata: Metadata = {
   title: {
-    default: `${storeName} · Notebooks`,
+    default: `${storeName} · Informática`,
     template: `%s · ${storeName}`,
   },
   description:
-    "Catálogo de notebooks da Servo Informática. Compare tela, peso, processador, memória e estoque da loja.",
+    "Notebooks, computadores, periféricos e acessórios da Servo Informática, com o mesmo estoque da loja física.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

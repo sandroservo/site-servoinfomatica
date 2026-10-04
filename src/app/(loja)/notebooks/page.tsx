@@ -5,7 +5,7 @@ import { parsePage } from "@/lib/pagination";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = { title: "Notebooks" };
+export const metadata: Metadata = { title: "Produtos" };
 
 export default async function NotebooksPage({
   searchParams,
@@ -19,7 +19,7 @@ export default async function NotebooksPage({
   return (
     <CatalogView
       eyebrow="Catálogo"
-      title="Notebooks"
+      title="Produtos"
       description="Filtre por marca, tela, peso, processador, memória, SSD e finalidade. O estoque é o da loja."
       action="/notebooks"
       filters={filters}

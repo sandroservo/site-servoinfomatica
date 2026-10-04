@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { imageUnoptimized } from "@/lib/utils";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useCart } from "@/components/cart-provider";
@@ -49,13 +50,13 @@ export function CartView({ whatsapp }: { whatsapp: string }) {
     .join(", ");
   const contact = whatsappHref(
     whatsapp,
-    `Olá! Quero saber sobre estes notebooks: ${message}. Total estimado ${formatBRL(subtotal)}.`,
+    `Olá! Quero saber sobre estes produtos: ${message}. Total estimado ${formatBRL(subtotal)}.`,
   );
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Carrinho</p>
-      <h1 className="mt-2 font-display text-4xl font-semibold">Seus notebooks</h1>
+      <h1 className="mt-2 font-display text-4xl font-semibold">Seu carrinho</h1>
       {!ready || (items.length > 0 && products.length === 0) ? (
         <p className="mt-8 text-neutral-500">Carregando carrinho…</p>
       ) : lines.length === 0 ? (
@@ -72,6 +73,7 @@ export function CartView({ whatsapp }: { whatsapp: string }) {
               {product.images[0] ? (
                 <Image
                   src={product.images[0].url}
+                  unoptimized={imageUnoptimized(product.images[0].url)}
                   alt={product.images[0].alt}
                   width={160}
                   height={120}

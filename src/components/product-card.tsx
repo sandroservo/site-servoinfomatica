@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { imageUnoptimized } from "@/lib/utils";
 import { availableUnits, type CatalogProduct } from "@/lib/catalog";
 import { effectivePriceCents, formatBRL, installmentCents, pixPriceCents } from "@/lib/money";
 
@@ -30,6 +31,7 @@ export function ProductCard({ product }: { product: CatalogProduct }) {
         {image ? (
           <Image
             src={image.url}
+            unoptimized={imageUnoptimized(image.url)}
             alt={image.alt}
             width={600}
             height={450}

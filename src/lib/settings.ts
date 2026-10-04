@@ -18,6 +18,16 @@ const defaults = {
   // ponytail: chave em texto puro no banco; criptografar exige outra chave fora do banco.
   asaasApiKey: "",
   asaasWebhookToken: "",
+  // ERP Hiper (API personalizada de loja virtual). Chave em Vendas > Loja virtual no Hiper Gestão.
+  hiperSecurityKey: "",
+  hiperAutoSync: "1",
+  hiperSyncMinutes: "15",
+  hiperSendOrders: "1",
+  // Estado interno da sincronização incremental (pontoDeSincronizacao da API).
+  hiperProductPoint: "0",
+  hiperStockPoint: "0",
+  hiperLastSyncAt: "",
+  hiperLastResult: "",
   adminEmail: "",
   adminPasswordHash: "",
   sessionSecret: "",

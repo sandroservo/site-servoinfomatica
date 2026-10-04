@@ -159,6 +159,8 @@ export async function saveProduct(formData: FormData) {
     color: text(formData, "color") || "Cinza",
   };
 
+  const hasSpec = checked(formData, "hasSpec");
+
   const data = {
     name,
     slug,
@@ -189,6 +191,7 @@ export async function saveProduct(formData: FormData) {
 
   try {
     if (id) {
+      if (!hasSpec) await prisma.productSpecification.deleteMany({ where: { productId: id } });
       await prisma.product.update({
         where: { id },
         data: {
@@ -197,7 +200,7 @@ export async function saveProduct(formData: FormData) {
             deleteMany: {},
             create: imageUrls.map((url, sortOrder) => ({ url, alt: name, sortOrder })),
           },
-          spec: { upsert: { create: spec, update: spec } },
+          ...(hasSpec ? { spec: { upsert: { create: spec, update: spec } } } : {}),
           inventory: { upsert: { create: inventory, update: inventory } },
         },
       });
@@ -208,7 +211,7 @@ export async function saveProduct(formData: FormData) {
       data: {
         ...data,
         images: { create: imageUrls.map((url, sortOrder) => ({ url, alt: name, sortOrder })) },
-        spec: { create: spec },
+        ...(hasSpec ? { spec: { create: spec } } : {}),
         inventory: { create: inventory },
       },
     });
@@ -223,7 +226,7 @@ export async function saveProduct(formData: FormData) {
 
 export async function duplicateProduct(id: string) {
   const product = await getAdminProduct(id);
-  if (!product?.spec || !product.inventory) throw new Error("Produto incompleto para duplicar.");
+  if (!product?.inventory) throw new Error("Produto incompleto para duplicar.");
 
   const baseSlug = `${product.slug}-copia`;
   let slug = baseSlug;
@@ -235,7 +238,7 @@ export async function duplicateProduct(id: string) {
     index += 1;
   }
 
-  const { id: _specId, productId: _specProduct, ...spec } = product.spec;
+  const spec = product.spec ? (({ id: _specId, productId: _specProduct, ...rest }) => rest)(product.spec) : null;
   const copy = await prisma.product.create({
     data: {
       name: `${product.name} (cópia)`,
@@ -264,7 +267,7 @@ export async function duplicateProduct(id: string) {
           sortOrder: image.sortOrder,
         })),
       },
-      spec: { create: spec },
+      ...(spec ? { spec: { create: spec } } : {}),
       inventory: {
         create: { physical: 0, reserved: 0, minimum: product.inventory.minimum },
       },

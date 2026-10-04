@@ -10,7 +10,7 @@ import { instagramProfile, telHref, whatsappHref } from "@/lib/store";
 type NavCategory = { name: string; slug: string };
 
 const fixedLinks = [
-  { href: "/notebooks", label: "Todos os notebooks" },
+  { href: "/notebooks", label: "Todos os produtos" },
   { href: "/ofertas", label: "Ofertas" },
   { href: "/lancamentos", label: "Lançamentos" },
 ];

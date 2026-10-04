@@ -16,6 +16,7 @@ import {
   setProductActive,
 } from "@/lib/admin";
 import { testConnection } from "@/lib/asaas";
+import { sendOrderToHiper, syncHiper, testHiperConnection } from "@/lib/hiper";
 import { hashPassword, saveSettings, type Settings } from "@/lib/settings";
 
 function refreshCatalog() {
@@ -150,9 +151,13 @@ export async function saveSettingsAction(formData: FormData) {
     storeAddress: field("storeAddress"),
     storeHours: field("storeHours"),
     asaasEnvironment: field("asaasEnvironment") === "production" ? "production" : "sandbox",
+    hiperAutoSync: formData.get("hiperAutoSync") ? "1" : "",
+    hiperSendOrders: formData.get("hiperSendOrders") ? "1" : "",
+    hiperSyncMinutes: String(Math.min(1440, Math.max(5, Number(field("hiperSyncMinutes")) || 15))),
   };
   // Campos secretos em branco = manter o valor atual.
   if (field("asaasApiKey")) values.asaasApiKey = field("asaasApiKey");
+  if (field("hiperSecurityKey")) values.hiperSecurityKey = field("hiperSecurityKey");
   if (field("asaasWebhookToken")) {
     if (field("asaasWebhookToken").length < 32) settingsError("O token do webhook precisa ter ao menos 32 caracteres.");
     values.asaasWebhookToken = field("asaasWebhookToken");
@@ -191,4 +196,33 @@ export async function testAsaasAction() {
     settingsError(message(error));
   }
   settingsRedirect("salvo=asaas");
+}
+
+export async function testHiperAction() {
+  await requireAdmin();
+  try {
+    await testHiperConnection();
+  } catch (error) {
+    settingsError(message(error));
+  }
+  settingsRedirect("salvo=hiper");
+}
+
+export async function syncHiperAction(formData: FormData) {
+  await requireAdmin();
+  let result = "";
+  try {
+    result = await syncHiper({ full: formData.get("full") === "1" });
+  } catch (error) {
+    settingsError(message(error));
+  }
+  refreshCatalog();
+  settingsRedirect(`sync=${encodeURIComponent(result)}`);
+}
+
+export async function resendHiperOrderAction(formData: FormData) {
+  await requireAdmin();
+  const result = await sendOrderToHiper(String(formData.get("orderId") ?? ""));
+  revalidatePath("/admin/pedidos");
+  redirect(`/admin/pedidos?hiper=${result}`);
 }

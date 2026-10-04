@@ -19,7 +19,7 @@ export default async function OffersPage({
     <CatalogView
       eyebrow="Promoções"
       title="Ofertas"
-      description="Notebooks com preço promocional. O valor final continua sendo validado no pedido."
+      description="Produtos com preço promocional. O valor final continua sendo validado no pedido."
       action="/ofertas"
       filters={filters}
       products={products}

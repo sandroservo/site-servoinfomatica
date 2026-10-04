@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { filterOptions, type CatalogFilters } from "@/lib/catalog";
+import { filterOptions, listCategories, type CatalogFilters } from "@/lib/catalog";
 
 type Option = { value: string; label: string };
 
@@ -33,7 +33,7 @@ function Field({
   );
 }
 
-export function CatalogFilters({
+export async function CatalogFilters({
   action,
   filters,
   brands,
@@ -44,6 +44,11 @@ export function CatalogFilters({
   brands: { name: string; slug: string }[];
   hidden?: Record<string, string>;
 }) {
+  // Na página de uma categoria o filtro de categoria já vem fixo em "hidden".
+  const categories = hidden?.categoria
+    ? []
+    : (await listCategories()).filter((category) => category._count.products > 0);
+
   return (
     <form action={action} className="space-y-4 rounded-3xl border border-black/5 bg-white p-4">
       {hidden
@@ -52,6 +57,14 @@ export function CatalogFilters({
           ))
         : null}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+        {categories.length ? (
+          <Field
+            label="Categoria"
+            name="categoria"
+            value={filters.categoria}
+            options={categories.map((category) => ({ value: category.slug, label: category.name }))}
+          />
+        ) : null}
         <Field
           label="Marca"
           name="marca"

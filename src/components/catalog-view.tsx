@@ -36,7 +36,7 @@ export function CatalogView({
           <p className="mt-3 max-w-2xl text-neutral-500">{description}</p>
         </div>
         <p className="text-sm text-neutral-500">
-          {listing.total} {listing.total === 1 ? "notebook" : "notebooks"}
+          {listing.total} {listing.total === 1 ? "produto" : "produtos"}
         </p>
       </div>
       <div className="mt-8 grid gap-8 lg:grid-cols-[260px_1fr]">
@@ -53,7 +53,7 @@ export function CatalogView({
         ) : (
           <div className="grid min-h-64 place-items-center rounded-3xl border border-dashed border-black/10 px-6 text-center">
             <div>
-              <p className="font-display text-2xl">Nenhum notebook com esses filtros</p>
+              <p className="font-display text-2xl">Nenhum produto com esses filtros</p>
               <p className="mt-2 text-sm text-neutral-500">Limpe a seleção ou busque por outra marca.</p>
             </div>
           </div>
