@@ -38,8 +38,11 @@
   --radius-lg: var(--radius);
 }
 
-* {
-  border-color: var(--border);
+/* Em @layer base para as classes border-* do Tailwind poderem sobrescrever. */
+@layer base {
+  * {
+    border-color: var(--border);
+  }
 }
 
 html {

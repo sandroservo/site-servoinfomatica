@@ -127,20 +127,26 @@ export async function saveStockAction(formData: FormData) {
   redirect("/admin/estoque?salvo=1");
 }
 
-function settingsRedirect(query: string): never {
-  redirect(`/admin/configuracoes?${query}`);
+const settingsTabs = ["loja", "pagamentos", "hiper", "acesso"];
+
+// Volta para a aba de onde veio o formulário (campo hidden "aba").
+function settingsRedirect(formData: FormData, query: string): never {
+  const tab = String(formData.get("aba") ?? "");
+  redirect(`/admin/configuracoes?${query}${settingsTabs.includes(tab) ? `&aba=${tab}` : ""}`);
 }
 
-function settingsError(text: string): never {
-  settingsRedirect(`erro=${encodeURIComponent(text)}`);
+function settingsError(formData: FormData, text: string): never {
+  settingsRedirect(formData, `erro=${encodeURIComponent(text)}`);
 }
 
-export async function saveSettingsAction(formData: FormData) {
-  await requireAdmin();
+// Grava o formulário inteiro de Configurações (todas as abas vão juntas, só ficam ocultas).
+// Trocar a senha derruba as sessões e manda para o login.
+async function applySettingsForm(formData: FormData) {
   const field = (name: string) => String(formData.get(name) ?? "").trim();
+  if (!formData.has("adminEmail")) return;
 
   const siteUrl = field("siteUrl").replace(/\/+$/, "");
-  if (siteUrl && !/^https?:\/\/[^/\s]+$/.test(siteUrl)) settingsError("Endereço do site inválido. Use algo como https://servoinformatica.com.br");
+  if (siteUrl && !/^https?:\/\/[^/\s]+$/.test(siteUrl)) settingsError(formData, "Endereço do site inválido. Use algo como https://servoinformatica.com.br");
 
   const values: Partial<Settings> = {
     siteUrl,
@@ -159,18 +165,18 @@ export async function saveSettingsAction(formData: FormData) {
   if (field("asaasApiKey")) values.asaasApiKey = field("asaasApiKey");
   if (field("hiperSecurityKey")) values.hiperSecurityKey = field("hiperSecurityKey");
   if (field("asaasWebhookToken")) {
-    if (field("asaasWebhookToken").length < 32) settingsError("O token do webhook precisa ter ao menos 32 caracteres.");
+    if (field("asaasWebhookToken").length < 32) settingsError(formData, "O token do webhook precisa ter ao menos 32 caracteres.");
     values.asaasWebhookToken = field("asaasWebhookToken");
   }
 
   const email = field("adminEmail").toLowerCase();
-  if (!email.includes("@")) settingsError("Informe um e-mail de administrador válido.");
+  if (!email.includes("@")) settingsError(formData, "Informe um e-mail de administrador válido.");
   values.adminEmail = email;
 
   const password = String(formData.get("adminPassword") ?? "");
   if (password) {
-    if (password.length < 8) settingsError("A nova senha precisa ter ao menos 8 caracteres.");
-    if (password !== String(formData.get("adminPasswordConfirm") ?? "")) settingsError("As senhas não conferem.");
+    if (password.length < 8) settingsError(formData, "A nova senha precisa ter ao menos 8 caracteres.");
+    if (password !== String(formData.get("adminPasswordConfirm") ?? "")) settingsError(formData, "As senhas não conferem.");
     values.adminPasswordHash = await hashPassword(password);
     // Novo segredo derruba todas as sessões abertas, inclusive esta.
     values.sessionSecret = randomBytes(32).toString("hex");
@@ -179,45 +185,63 @@ export async function saveSettingsAction(formData: FormData) {
   await saveSettings(values);
   refreshCatalog();
   if (password) redirect("/admin/login");
-  settingsRedirect("salvo=1");
 }
 
-export async function regenerateWebhookTokenAction() {
+export async function saveSettingsAction(formData: FormData) {
   await requireAdmin();
+  await applySettingsForm(formData);
+  settingsRedirect(formData, "salvo=1");
+}
+
+export async function regenerateWebhookTokenAction(formData: FormData) {
+  await requireAdmin();
+  await applySettingsForm(formData);
   await saveSettings({ asaasWebhookToken: randomBytes(32).toString("hex") });
-  settingsRedirect("salvo=token");
+  settingsRedirect(formData, "salvo=token");
 }
 
-export async function testAsaasAction() {
+// Os botões de teste/sincronização salvam o formulário antes, para valer a chave recém-colada.
+export async function testAsaasAction(formData: FormData) {
   await requireAdmin();
+  await applySettingsForm(formData);
   try {
     await testConnection();
   } catch (error) {
-    settingsError(message(error));
+    settingsError(formData, message(error));
   }
-  settingsRedirect("salvo=asaas");
+  settingsRedirect(formData, "salvo=asaas");
 }
 
-export async function testHiperAction() {
+export async function testHiperAction(formData: FormData) {
   await requireAdmin();
+  await applySettingsForm(formData);
   try {
     await testHiperConnection();
   } catch (error) {
-    settingsError(message(error));
+    settingsError(formData, message(error));
   }
-  settingsRedirect("salvo=hiper");
+  settingsRedirect(formData, "salvo=hiper");
+}
+
+async function runHiperSync(formData: FormData, full: boolean) {
+  await requireAdmin();
+  await applySettingsForm(formData);
+  let result = "";
+  try {
+    result = await syncHiper({ full });
+  } catch (error) {
+    settingsError(formData, message(error));
+  }
+  refreshCatalog();
+  settingsRedirect(formData, `sync=${encodeURIComponent(result)}`);
 }
 
 export async function syncHiperAction(formData: FormData) {
-  await requireAdmin();
-  let result = "";
-  try {
-    result = await syncHiper({ full: formData.get("full") === "1" });
-  } catch (error) {
-    settingsError(message(error));
-  }
-  refreshCatalog();
-  settingsRedirect(`sync=${encodeURIComponent(result)}`);
+  await runHiperSync(formData, false);
+}
+
+export async function syncHiperFullAction(formData: FormData) {
+  await runHiperSync(formData, true);
 }
 
 export async function resendHiperOrderAction(formData: FormData) {
